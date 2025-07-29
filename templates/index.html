@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Integration Demo</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <h1>Чат с искусственным интеллектом</h1>
+  <textarea id="user-input" placeholder="Введите сообщение..."></textarea>
+  <button id="send-btn">Send</button>
+  <div id="response"></div>
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
