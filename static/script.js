@@ -54,7 +54,7 @@ async function streamRKLLMChat(messages, enable_thinking = false, tools = null) 
               if (content) {
 
                 // Do something with the content, e.g., display it
-                document.getElementById('response').innerText += content || "No response from AI.";
+                document.getElementById('response').textContent += content || "No response from AI.";
               }
             }
           } catch (e) {
@@ -98,7 +98,7 @@ document.getElementById('send-btn').onclick = async function () {
     ]
 
   // Example rkllm chat integration 
-  streamRKLLMChat(messages, enable_thinking=false)
+  streamRKLLMChat(messages)
   .then(() => console.log('Stream completed'))
   .catch(error => console.error('Stream error:', error));
 
