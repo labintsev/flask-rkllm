@@ -51,7 +51,7 @@ VsCode is recommended, because you can test web app via localhost with port forw
 - `rkllm_chat.py` - RKLLM utils to interact with model
 - `s3.py` - script to download .rkllm models from s3 
 - `*.rkllm` — Example model files
-   `templates/` — Jinja2 templates for Flask 
+- `templates/` — Jinja2 templates for Flask 
 - `static/` — Frontend assets (HTML, CSS, JS)
 
 ---
