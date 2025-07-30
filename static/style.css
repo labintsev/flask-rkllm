@@ -17,4 +17,8 @@ button {
   background: #e0e7ff;
   border-radius: 4px;
   min-height: 40px;
+
+}
+#response {
+  white-space: pre-wrap; 
 }
