@@ -11,7 +11,7 @@
         <div id="chat-box" class="chat-box">
             {% for entry in chat_history %}
                 <div class="message user"><strong>You:</strong> {{ entry.user_message }}</div>
-                <div class="message llm"><strong>LLM:</strong> {{ entry.llm_reply }}</div>
+                <div class="message llm"><strong>LLM:</strong> <pre id="response">{{ entry.llm_reply }}</pre></div>
             {% endfor %}
         </div>
         <form id="chat-form" autocomplete="off">

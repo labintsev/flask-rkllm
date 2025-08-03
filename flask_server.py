@@ -2,14 +2,14 @@ import sys
 import os
 import subprocess
 import resource
-import threading
-import time
 import argparse
-import json
 from flask import Flask, request, jsonify, Response, render_template
 from rkllm_chat import RKLLM, chat, chat_generator
+from models import db, ChatHistory
 
 app = Flask(__name__)
+app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///site.db"
+db.init_app(app)
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--rkllm_model_path', 
@@ -45,11 +45,11 @@ if args.prompt_cache_path:
         exit()
 
 # Fix frequency
-command = "sudo bash fix_freq_{}.sh".format(args.target_platform)
-subprocess.run(command, shell=True)
+# command = "sudo bash fix_freq_{}.sh".format(args.target_platform)
+# subprocess.run(command, shell=True)
 
 # Set resource limit
-resource.setrlimit(resource.RLIMIT_NOFILE, (102400, 102400))
+# resource.setrlimit(resource.RLIMIT_NOFILE, (102400, 102400))
 
 # Initialize RKLLM model
 print("=========init....===========")
@@ -61,47 +61,23 @@ print("==============================")
 sys.stdout.flush()
 
 # Create a function to receive data sent by the user using a request
-@app.route('/rkllm_chat', methods=['POST'])
-def receive_message():
-    # Link global variables to retrieve the output information from the callback function
-    
+@app.route('/chat', methods=['POST'])
+def chat_rkllm():
     # Get JSON data from the POST request.
     data = request.json
     if data and 'messages' in data:
-        # Define the structure for the returned response.
-        rkllm_responses = {
-            "id": "rkllm_chat",
-            "object": "rkllm_chat",
-            "created": None,
-            "choices": [],
-            "usage": {
-            "prompt_tokens": None,
-            "completion_tokens": None,
-            "total_tokens": None
-            }
-        }
         messages = data['messages']
         print("Received messages:", messages)
         if not "stream" in data.keys() or data["stream"] == False:
             # Process the received data here.
-            for index, message in enumerate(messages):
+            for message in messages:
                 input_prompt = message['content']
                 rkllm_output = chat(input_prompt, rkllm_model)
-
-                rkllm_responses["choices"].append(
-                    {"index": index,
-                    "message": {
-                        "role": "assistant",
-                        "content": rkllm_output,
-                    },
-                    "logprobs": None,
-                    "finish_reason": "stop"
-                    }
-                )
-            print('Return: ', rkllm_responses)
-            return jsonify(rkllm_responses), 200
+            print('Return: ', rkllm_output)
+            response = {"message": rkllm_output}
+            return jsonify(response), 200
         else:
-            for index, message in enumerate(messages):
+            for message in messages:
                 input_prompt = message['content']
 
             return Response(chat_generator(input_prompt, rkllm_model), content_type='text/plain')
