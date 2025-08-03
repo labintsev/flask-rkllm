@@ -60,6 +60,7 @@ async function streamRKLLMChat(messages, enable_thinking = false, tools = null) 
 }
 
 document.getElementById('chat-form').addEventListener('submit', async function(e) { 
+  e.preventDefault();
   console.log("Form submitted, begin ...")
   const input = document.getElementById('user-input').value;
 
