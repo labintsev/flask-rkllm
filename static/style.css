@@ -4,16 +4,23 @@ body {
     margin: 0;
     padding: 0;
 }
+h1 {
+    text-align: center;
+}
 .chat-container {
-    max-width: 500px;
-    margin: 40px auto;
+    height: 88vh;
+    width: 80vw;
+    max-width: 800px;
+    margin: auto;
     background: #fff;
     border-radius: 8px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     padding: 20px;
+    display: flex;
+    flex-direction: column;
 }
 .chat-box {
-    height: 300px;
+    flex: 1 1 auto;
     overflow-y: auto;
     border: 1px solid #ddd;
     border-radius: 4px;
@@ -34,6 +41,7 @@ body {
 }
 #chat-form {
     display: flex;
+    margin-top: auto;
 }
 #user-input {
     flex: 1;

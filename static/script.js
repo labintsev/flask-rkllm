@@ -1,6 +1,6 @@
 async function streamRKLLMChat(messages, enable_thinking = false, tools = null) {
   const url = '/chat'; // Update this if your endpoint is different
-  const stream_llm_response = false;
+  const stream_llm_response = true;
 
   const payload = {
     messages,
@@ -35,22 +35,26 @@ async function streamRKLLMChat(messages, enable_thinking = false, tools = null) 
     const userMessage = messages[0].content;
 
     if (stream_llm_response) {
+      chatBox.innerHTML += `<div class="message user"><strong>You:</strong> <pre> ${userMessage} </pre> </div>`;
+      chatBox.innerHTML += `<div class="message llm"><strong>LLM:</strong><pre id="response"> </pre> </div>`
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
         buffer = decoder.decode(value, { stream: true });
-        document.getElementById('chat-box').lastChild.getElementById('response').textContent += buffer || "No response from AI.";
+        console.log(document.getElementById('chat-box').lastChild);
+        document.getElementById('chat-box').lastChild.getElementsByTagName('pre')[0].textContent += buffer || "No response from AI.";
       }
 
     }
     else {
-      chatBox.innerHTML += `<div class="message user"><strong>You:</strong> ${userMessage}</div>`;
+      chatBox.innerHTML += `<div class="message user"><strong>You:</strong><pre> ${userMessage} </pre> </div>`;
       const { done, value } = await reader.read();
       buffer = decoder.decode(value, { stream: false });
       const data = JSON.parse(buffer);
       const content = data.message
       console.log(content)
-      document.getElementById('chat-box').lastChild.getElementById('response').textContent = content || "No response from AI.";
+      chatBox.innerHTML += `<div class="message llm"><strong>LLM:</strong><pre> ${content} </pre> </div>`;
+      chatBox.scrollTop = chatBox.scrollHeight;
     }
 
   } catch (error) {
@@ -84,12 +88,12 @@ document.getElementById('chat-form').addEventListener('submit', async function(e
 });
 
 // Add Enter key support for textarea
-document.getElementById('user-input').addEventListener('keydown', function (event) {
-  if (event.key === 'Enter' && !event.shiftKey) {
-    event.preventDefault();
-    document.getElementById('chat-form').submit;
-  }
-});
+// document.getElementById('user-input').addEventListener('keydown', function (event) {
+//   if (event.key === 'Enter' && !event.shiftKey) {
+//     event.preventDefault();
+//     document.getElementById('chat-form').submit;
+//   }
+// });
 
 
 // From the flask-llm project
