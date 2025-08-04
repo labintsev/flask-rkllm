@@ -73,7 +73,7 @@ def make_prompt(messages):
 
 
 # Create a function to receive data sent by the user using a request
-@app.route('/chat', methods=['POST'])
+@app.route('/v1/chat/completions', methods=['POST'])
 def chat_rkllm():
     # Get JSON data from the POST request.
     data = request.json

@@ -6,11 +6,6 @@ import resource
 import threading
 import queue
 import time
-import argparse
-import json
-from flask import Flask, request, jsonify, Response, render_template
-
-app = Flask(__name__)
 
 # Set the dynamic library path
 rkllm_lib = ctypes.CDLL('lib/librkllmrt.so')
@@ -314,9 +309,8 @@ class RKLLM(object):
         self.rkllm_destroy(self.handle)
 
 
-def chat(input_prompt, rkllm_model):
+def chat(input_prompt: str, rkllm_model: RKLLM, request_id: str="") -> dict:
     rkllm_output = ''
-
     role = 'user'
     enable_thinking = False
 
@@ -335,30 +329,51 @@ def chat(input_prompt, rkllm_model):
         model_thread.join(timeout=0.005)
         model_thread_finished = not model_thread.is_alive()
 
-    return rkllm_output
+    return {
+        "id": request_id,
+        "object": "chat.completion",
+        "created": int(time.time()),
+        "choices": [
+            {
+                "index": 0,
+                "message": {
+                    "role": "assistant",
+                    "content": rkllm_output
+                },
+                "finish_reason": "stop"
+            }
+        ]
+    }
 
 
-def chat_generator(input_prompt, rkllm_model):
+def chat_generator(input_prompt: str, rkllm_model: RKLLM, request_id: str=""):
     role = 'user'
     enable_thinking = False
 
     model_thread = threading.Thread(target=rkllm_model.run, args=(role, enable_thinking, input_prompt, ))
     model_thread.start()
 
-    # Wait for the model to finish running and periodically check the inference thread of the model.
     model_thread_finished = False
 
     while not model_thread_finished:
         time.sleep(0.005)
         item = global_text.get()
         if item:
-            yield item
+            # Yield each token/segment in OpenAI stream format
+            for char in item:
+                yield (
+                    '{"choices":[{"delta":{"content":"%s"},"index":0,"finish_reason":null}]}\n' % char
+                )
 
         model_thread.join(timeout=0.005)
         model_thread_finished = not model_thread.is_alive()
 
+    # Send finish_reason at the end
+    yield '{"choices":[{"delta":{},"index":0,"finish_reason":"stop"}]}\n'
+
 
 if __name__ == '__main__':
+    # Test the RKLLM model initialization and inference
     print("========= Fix frequency ===========")
 
     command = "sudo bash fix_freq_rk3588.sh"

@@ -1,12 +1,15 @@
 async function streamRKLLMChat(messages, enable_thinking = false, tools = null) {
-  const url = '/chat'; // Update this if your endpoint is different
+
+  const url = '/v1/chat/completions'; // Update this if your endpoint is different
   const stream_llm_response = true;
 
-  const payload = {
-    messages,
-    enable_thinking,
-    stream: stream_llm_response, // This is crucial for streaming
-  };
+const payload = {
+  model: "rkllm", // any model name, board suppots only one model for now
+  enable_thinking: enable_thinking,
+  messages: messages,
+  stream: stream_llm_response,
+  // Add other OpenAI parameters if needed (e.g., temperature, max_tokens)
+};
 
   try {
     const response = await fetch(url, {
@@ -27,7 +30,6 @@ async function streamRKLLMChat(messages, enable_thinking = false, tools = null) 
     }
 
     const reader = response.body.getReader();
-    console.log(reader);
     const decoder = new TextDecoder();
     let buffer = '';
 
@@ -37,12 +39,27 @@ async function streamRKLLMChat(messages, enable_thinking = false, tools = null) 
     if (stream_llm_response) {
       chatBox.innerHTML += `<div class="message user"><strong>You:</strong> <pre> ${userMessage} </pre> </div>`;
       chatBox.innerHTML += `<div class="message llm"><strong>LLM:</strong><pre id="response"> </pre> </div>`
+      const preResponse = document.getElementById('chat-box').lastChild.getElementsByTagName('pre')[0];
+      chatBox.scrollTop = chatBox.scrollHeight;
+      
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
         buffer = decoder.decode(value, { stream: true });
-        console.log(document.getElementById('chat-box').lastChild);
-        document.getElementById('chat-box').lastChild.getElementsByTagName('pre')[0].textContent += buffer || "No response from AI.";
+        // Replace newlines in choices delta content
+        buffer = buffer.replace(/\n/g, ' ');
+
+        try {
+          buffer = JSON.parse(buffer);
+        } catch (error) {
+          console.error('Error parsing JSON:', error, "Buffer content:", buffer);
+          continue;
+        }
+
+        if (buffer.choices && buffer.choices[0] && buffer.choices[0].delta && buffer.choices[0].delta.content) {
+          const content = buffer.choices[0].delta.content;
+          preResponse.textContent += content;
+        };
       }
 
     }
@@ -51,10 +68,11 @@ async function streamRKLLMChat(messages, enable_thinking = false, tools = null) 
       const { done, value } = await reader.read();
       buffer = decoder.decode(value, { stream: false });
       const data = JSON.parse(buffer);
-      const content = data.message
+      const content = data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content
+        ? data.choices[0].message.content
+        : "No response from AI.";
       console.log(content)
       chatBox.innerHTML += `<div class="message llm"><strong>LLM:</strong><pre> ${content} </pre> </div>`;
-      chatBox.scrollTop = chatBox.scrollHeight;
     }
 
   } catch (error) {
@@ -63,7 +81,7 @@ async function streamRKLLMChat(messages, enable_thinking = false, tools = null) 
   }
 }
 
-document.getElementById('chat-form').addEventListener('submit', async function(e) { 
+document.getElementById('chat-form').addEventListener('submit', async function (e) {
   e.preventDefault();
   console.log("Form submitted, begin ...")
   const input = document.getElementById('user-input').value;
