@@ -3,7 +3,7 @@ import os
 import argparse
 import logging
 from flask import Flask, request, jsonify, Response, render_template
-from chat_stub import RKLLM, chat, chat_generator
+from rkllm_chat import RKLLM, chat, chat_generator
 from models import db, ChatHistory
 
 # Set up logging

@@ -360,10 +360,9 @@ def chat_generator(input_prompt: str, rkllm_model: RKLLM, request_id: str=""):
         item = global_text.get()
         if item:
             # Yield each token/segment in OpenAI stream format
-            for char in item:
-                yield (
-                    '{"choices":[{"delta":{"content":"%s"},"index":0,"finish_reason":null}]}\n' % char
-                )
+            yield (
+                '{"choices":[{"delta":{"content":"%s"},"index":0,"finish_reason":null}]}\n' % item
+            )
 
         model_thread.join(timeout=0.005)
         model_thread_finished = not model_thread.is_alive()
