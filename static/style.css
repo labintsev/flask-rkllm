@@ -7,6 +7,9 @@ body {
 h1 {
     text-align: center;
 }
+pre {
+    white-space: pre-wrap; 
+}
 .chat-container {
     height: 88vh;
     width: 80vw;

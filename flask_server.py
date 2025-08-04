@@ -2,7 +2,7 @@ import sys
 import os
 import argparse
 from flask import Flask, request, jsonify, Response, render_template
-from chat_stub import RKLLM, chat, chat_generator
+from rkllm_chat import RKLLM, chat, chat_generator
 from models import db, ChatHistory
 
 app = Flask(__name__)
