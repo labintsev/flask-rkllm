@@ -1,3 +1,4 @@
 .env
 *.rkllm
 *.pyc
+app.log
