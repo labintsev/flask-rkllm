@@ -33,28 +33,31 @@ db.init_app(app)
 # Set resource limit
 # resource.setrlimit(resource.RLIMIT_NOFILE, (102400, 102400))
 
-logger.debug("Initialize RKLLM model")
+logger.info("Initialize RKLLM model")
 
 model_path = "DeepSeek-R1-Distill-Qwen-1.5B_W8A8_RK3588.rkllm"
 lora_model_path = None
 prompt_cache_path = None
 rkllm_model = RKLLM(model_path, lora_model_path, prompt_cache_path)
 
-logger.debug("RKLLM Model has been initialized successfully！")
+logger.info("RKLLM Model has been initialized successfully！")
 
 
 @app.route('/v1/chat/completions', methods=['POST'])
 def chat_rkllm():
     """OpenAI API compat"""
     data = request.json
+    logger.debug('Input: %s', data)
     if data and 'messages' in data:
         prompt = make_prompt(data['messages'])
         
         if not "stream" in data.keys() or data["stream"] == False:
+            logger.debug("Start sync inference.")
             rkllm_output = chat(prompt, rkllm_model)
             logger.debug('Return: %s', rkllm_output)
             return jsonify(rkllm_output), 200
         else:
+            logger.debug("Start async inference with stream output.")
             return Response(chat_generator(prompt, rkllm_model), content_type='text/plain')
     else:
         logger.error('No messages in data!')
@@ -68,5 +71,5 @@ def home():
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8080, debug=False)
-    logger.debug("RKLLM model inference completed, releasing RKLLM model resources...")
+    logger.info("RKLLM model inference completed, releasing RKLLM model resources...")
     rkllm_model.release()

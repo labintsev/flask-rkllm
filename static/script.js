@@ -3,13 +3,13 @@ async function streamRKLLMChat(messages, enable_thinking = false, tools = null) 
   const url = '/v1/chat/completions'; // Update this if your endpoint is different
   const stream_llm_response = true;
 
-const payload = {
-  model: "rkllm", // any model name, board suppots only one model for now
-  enable_thinking: enable_thinking,
-  messages: messages,
-  stream: stream_llm_response,
-  // Add other OpenAI parameters if needed (e.g., temperature, max_tokens)
-};
+  const payload = {
+    model: "rkllm", // any model name, board suppots only one model for now
+    enable_thinking: enable_thinking,
+    messages: messages,
+    stream: stream_llm_response,
+    // Add other OpenAI parameters if needed (e.g., temperature, max_tokens)
+  };
 
   try {
     const response = await fetch(url, {
@@ -41,7 +41,7 @@ const payload = {
       chatBox.innerHTML += `<div class="message llm"><strong>LLM:</strong><pre id="response"> </pre> </div>`
       const preResponse = document.getElementById('chat-box').lastChild.getElementsByTagName('pre')[0];
       chatBox.scrollTop = chatBox.scrollHeight;
-      
+
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
